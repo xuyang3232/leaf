@@ -29,35 +29,32 @@ func Init() {
 
 func run() {
 	for {
-		reader := bufio.NewReader(os.Stdin)
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			log.Error("console ReadString is error: %v", err)
-			continue
-		}
-		line = strings.TrimSuffix(line[:len(line)-1], "\r")
+        scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan(){
+			line := scanner.Text()
+            
+            args := strings.Fields(line)
+            if len(args) == 0 {
+                continue
+            }
 
-		args := strings.Fields(line)
-		if len(args) == 0 {
-			continue
-		}
-
-		name := args[0]
-		var c Command
-		for _, _c := range commands {
-			if _c.name() == args[0] {
-				c = _c
-				break
-			}
-		}
-		if c == nil {
-			log.Error("command not found, try `help` for help\r\n")
-			continue
-		}
-		output := c.run(args[1:])
-		if output != "" {
-			log.Release("%v cmd run result: %v", name, output)
-		}
+            name := args[0]
+            var c Command
+            for _, _c := range commands {
+                if _c.name() == args[0] {
+                    c = _c
+                    break
+                }
+            }
+            if c == nil {
+                log.Error("command not found, try `help` for help\r\n")
+                continue
+            }
+            output := c.run(args[1:])
+            if output != "" {
+                log.Release("%v cmd run result: %v", name, output)
+            }
+        }
 	}
 }
 
