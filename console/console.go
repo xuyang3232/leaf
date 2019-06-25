@@ -14,7 +14,7 @@ import (
 var server *network.TCPServer
 
 func Init() {
-	go run()
+	//go run()
 
 	if conf.ConsolePort != 0 {
 		server = new(network.TCPServer)
