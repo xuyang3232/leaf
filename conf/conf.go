@@ -10,6 +10,7 @@ var (
 
 	// console
 	ConsolePort   int
+	OpenLocalConsole int
 	ConsolePrompt string = "Leaf# "
 	ProfilePath   string
 
