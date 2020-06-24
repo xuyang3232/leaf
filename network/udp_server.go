@@ -21,20 +21,20 @@ func (server *UDPServer) Start() {
 func (server *UDPServer) init() {
 	udpAddr, err := net.ResolveUDPAddr("udp4", server.Addr)
 	if err != nil{
-		log.Fatal("%v", err)
+		log.Fatalf("%v", err)
 	}
 	server.conn, err = net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		log.Fatal("%v", err)
+		log.Fatalf("%v", err)
 	}
 
 	if server.PendingWriteNum <= 0 {
 		server.PendingWriteNum = 100
-		log.Release("invalid PendingWriteNum, reset to %v", server.PendingWriteNum)
+		log.Infof("invalid PendingWriteNum, reset to %v", server.PendingWriteNum)
 	}
 	
 	if server.NewAgent == nil {
-		log.Fatal("NewAgent must not be nil")
+		log.Fatalf("NewAgent must not be nil")
 	}
 }
 

@@ -50,13 +50,13 @@ func (p *Processor) SetByteOrder(littleEndian bool) {
 func (p *Processor) Register(msg proto.Message, id uint16) uint16 {
 	msgType := reflect.TypeOf(msg)
 	if msgType == nil || msgType.Kind() != reflect.Ptr {
-		log.Fatal("protobuf message pointer required")
+		log.Fatalf("protobuf message pointer required")
 	}
 	if _, ok := p.msgID[msgType]; ok {
-		log.Fatal("message %s is already registered", msgType)
+		log.Fatalf("message %s is already registered", msgType)
 	}
 	if _, ok := p.msgInfo[id]; ok {
-		log.Fatal("message %v is already registered", id)
+		log.Fatalf("message %v is already registered", id)
 	}
 
 	i := new(MsgInfo)
@@ -71,10 +71,10 @@ func (p *Processor) SetRouter(msg proto.Message, msgRouter *chanrpc.Server) {
 	msgType := reflect.TypeOf(msg)
 	id, ok := p.msgID[msgType]
 	if !ok {
-		log.Fatal("message %s not registered", msgType)
+		log.Fatalf("message %s not registered", msgType)
 	}
 	if _, ok := p.msgInfo[id]; !ok {
-		log.Fatal("message id %v is already registered", id)
+		log.Fatalf("message id %v is already registered", id)
 	}
 	p.msgInfo[id].msgRouter = msgRouter
 }
@@ -84,10 +84,10 @@ func (p *Processor) SetHandler(msg proto.Message, msgHandler MsgHandler) {
 	msgType := reflect.TypeOf(msg)
 	id, ok := p.msgID[msgType]
 	if !ok {
-		log.Fatal("message %s not registered", msgType)
+		log.Fatalf("message %s not registered", msgType)
 	}
 	if _, ok := p.msgInfo[id]; !ok{
-		log.Fatal("message %v not registered", id)
+		log.Fatalf("message %v not registered", id)
 	}
 	p.msgInfo[id].msgHandler = msgHandler
 }
@@ -95,7 +95,7 @@ func (p *Processor) SetHandler(msg proto.Message, msgHandler MsgHandler) {
 // It's dangerous to call the method on routing or marshaling (unmarshaling)
 func (p *Processor) SetRawHandler(id uint16, msgRawHandler MsgHandler) {
 	if _, ok := p.msgInfo[id]; !ok{
-		log.Fatal("message id %v not registered", id)
+		log.Fatalf("message id %v not registered", id)
 	}
 
 	p.msgInfo[id].msgRawHandler = msgRawHandler

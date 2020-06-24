@@ -52,19 +52,19 @@ func (a *UDPAgent) Run() {
 	for {
 		data, addr, err := a.conn.ReadMsg()
 		if err != nil {
-			log.Debug("read message: %v", err)
+			log.Debugf("read message: %v", err)
 			continue
 		}
 		if a.gate.Processor != nil {
 			msg, err := a.gate.Processor.Unmarshal(data)
 			if err != nil {
-				log.Debug("unmarshal message error: %v", err)
+				log.Debugf("unmarshal message error: %v", err)
 				continue
 			}
 			
 			err = a.gate.Processor.Route(msg, &UDPRouteData{a, addr})
 			if err != nil {
-				log.Debug("route message error: %v", err)
+				log.Debugf("route message error: %v", err)
 				continue
 			}
 		}
@@ -77,12 +77,12 @@ func (a *UDPAgent) WriteMsg(msg interface{}, addr * net.UDPAddr) {
 	if a.gate.Processor != nil {
 		data, err := a.gate.Processor.Marshal(msg)
 		if err != nil {
-			log.Error("marshal message %v error: %v", reflect.TypeOf(msg), err)
+			log.Errorf("marshal message %v error: %v", reflect.TypeOf(msg), err)
 			return
 		}
 		err = a.conn.WriteMsg(addr,data...)
 		if err != nil {
-			log.Error("write message %v error: %v", reflect.TypeOf(msg), err)
+			log.Errorf("write message %v error: %v", reflect.TypeOf(msg), err)
 		}
 	}
 }

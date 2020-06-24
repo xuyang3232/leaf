@@ -42,9 +42,9 @@ func (g *Go) Go(f func(), cb func()) {
 				if conf.LenStackBuf > 0 {
 					buf := make([]byte, conf.LenStackBuf)
 					l := runtime.Stack(buf, false)
-					log.Error("%v: %s", r, buf[:l])
+					log.Errorf("%v: %s", r, buf[:l])
 				} else {
-					log.Error("%v", r)
+					log.Errorf("%v", r)
 				}
 			}
 		}()
@@ -60,9 +60,9 @@ func (g *Go) Cb(cb func()) {
 			if conf.LenStackBuf > 0 {
 				buf := make([]byte, conf.LenStackBuf)
 				l := runtime.Stack(buf, false)
-				log.Error("%v: %s", r, buf[:l])
+				log.Errorf("%v: %s", r, buf[:l])
 			} else {
-				log.Error("%v", r)
+				log.Errorf("%v", r)
 			}
 		}
 	}()
@@ -110,9 +110,9 @@ func (c *LinearContext) Go(f func(), cb func()) {
 				if conf.LenStackBuf > 0 {
 					buf := make([]byte, conf.LenStackBuf)
 					l := runtime.Stack(buf, false)
-					log.Error("%v: %s", r, buf[:l])
+					log.Errorf("%v: %s", r, buf[:l])
 				} else {
-					log.Error("%v", r)
+					log.Errorf("%v", r)
 				}
 			}
 		}()

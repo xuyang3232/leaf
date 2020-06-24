@@ -4,9 +4,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/vmihailenco/msgpack"
 	"github.com/name5566/leaf/chanrpc"
 	"github.com/name5566/leaf/log"
+	"github.com/vmihailenco/msgpack/v4"
 	"math"
 	"reflect"
 )
@@ -51,16 +51,16 @@ func (p *Processor) SetByteOrder(littleEndian bool) {
 func (p *Processor) Register(msg interface{}, id uint16) uint16 {
 	msgType := reflect.TypeOf(msg)
 	if msgType == nil || msgType.Kind() != reflect.Ptr {
-		log.Fatal("msgpack message pointer required")
+		log.Fatalf("msgpack message pointer required")
 	}
 	if _, ok := p.msgID[msgType]; ok {
-		log.Fatal("msgpack message %s is already registered in msgID", msgType)
+		log.Fatalf("msgpack message %s is already registered in msgID", msgType)
 	}
 	if _, ok := p.msgInfo[id]; ok {
-		log.Fatal("msgpack message %s is already registered in msgInfo", id)
+		log.Fatalf("msgpack message %s is already registered in msgInfo", id)
 	}
 	if id >= math.MaxUint16 {
-		log.Fatal("too many msgpack messages (max = %v)", math.MaxUint16)
+		log.Fatalf("too many msgpack messages (max = %v)", math.MaxUint16)
 	}
 
 	i := new(MsgInfo)
@@ -75,7 +75,7 @@ func (p *Processor) SetRouter(msg interface{}, msgRouter *chanrpc.Server) {
 	msgType := reflect.TypeOf(msg)
 	id, ok := p.msgID[msgType]
 	if !ok {
-		log.Fatal("message %s not registered", msgType)
+		log.Fatalf("message %s not registered", msgType)
 	}
 
 	p.msgInfo[id].msgRouter = msgRouter
@@ -86,7 +86,7 @@ func (p *Processor) SetHandler(msg interface{}, msgHandler MsgHandler) {
 	msgType := reflect.TypeOf(msg)
 	id, ok := p.msgID[msgType]
 	if !ok {
-		log.Fatal("message %s not registered", msgType)
+		log.Fatalf("message %s not registered", msgType)
 	}
 
 	p.msgInfo[id].msgHandler = msgHandler
@@ -95,7 +95,7 @@ func (p *Processor) SetHandler(msg interface{}, msgHandler MsgHandler) {
 // It's dangerous to call the method on routing or marshaling (unmarshaling)
 func (p *Processor) SetRawHandler(id uint16, msgRawHandler MsgHandler) {
 	if _,ok := p.msgInfo[id]; !ok{
-		log.Fatal("message id %v not registered", id)
+		log.Fatalf("message id %v not registered", id)
 	}
 
 	p.msgInfo[id].msgRawHandler = msgRawHandler

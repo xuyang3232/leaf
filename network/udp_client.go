@@ -21,11 +21,11 @@ func (client *UDPClient) Start() {
 func (client *UDPClient) init() {
 	if client.PendingWriteNum <= 0 {
 		client.PendingWriteNum = 100
-		log.Release("invalid PendingWriteNum, reset to %v", client.PendingWriteNum)
+		log.Infof("invalid PendingWriteNum, reset to %v", client.PendingWriteNum)
 	}
 	
 	if client.NewAgent == nil {
-		log.Fatal("NewAgent must not be nil")
+		log.Fatalf("NewAgent must not be nil")
 	}
 }
 
@@ -40,7 +40,7 @@ func (client *UDPClient) dial() *net.UDPConn {
 			return conn
 		}
 
-		log.Release("connect to %v error: %v", client.Addr, err)
+		log.Infof("connect to %v error: %v", client.Addr, err)
 		time.Sleep(client.ConnectInterval)
 		continue
 	}

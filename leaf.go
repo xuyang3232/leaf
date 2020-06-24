@@ -13,15 +13,12 @@ import (
 func Run(mods ...module.Module) {
 	// logger
 	if conf.LogLevel != "" {
-		logger, err := log.New(conf.LogLevel, conf.LogPath, conf.LogFlag)
-		if err != nil {
-			panic(err)
-		}
+		logger := log.NewLoggerZap(conf.LogLevel, conf.LogPath)
 		log.Export(logger)
 		defer logger.Close()
 	}
 
-	log.Release("Leaf %v starting up", version)
+	log.Infof("Leaf %v starting up", version)
 
 	// module
 	for i := 0; i < len(mods); i++ {
@@ -39,7 +36,7 @@ func Run(mods ...module.Module) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, os.Kill)
 	sig := <-c
-	log.Release("Leaf closing down (signal: %v)", sig)
+	log.Infof("Leaf closing down (signal: %v)", sig)
 	console.Destroy()
 	cluster.Destroy()
 	module.Destroy()

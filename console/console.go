@@ -3,12 +3,12 @@ package console
 import (
 	"bufio"
 	"github.com/name5566/leaf/conf"
-	"github.com/name5566/leaf/network"
 	"github.com/name5566/leaf/log"
+	"github.com/name5566/leaf/network"
 	"math"
+	"os"
 	"strconv"
 	"strings"
-	"os"
 )
 
 var server *network.TCPServer
@@ -49,12 +49,12 @@ func run() {
                 }
             }
             if c == nil {
-                log.Error("command not found, try `help` for help\r\n")
+                log.Errorf("command not found, try `help` for help\r\n")
                 continue
             }
             output := c.run(args[1:])
             if output != "" {
-                log.Release("%v cmd run result: %v", name, output)
+                log.Infof("%v cmd run result: %v", name, output)
             }
         }
 	}
