@@ -26,6 +26,9 @@ type Gate struct {
 	TCPAddr      string
 	LenMsgLen    int
 	LittleEndian bool
+
+	OnAgentInit 	   func(Agent)
+	OnAgentDestroy 	   func(Agent)
 }
 
 func (gate *Gate) Run(closeSig chan bool) {
@@ -44,6 +47,10 @@ func (gate *Gate) Run(closeSig chan bool) {
 			if gate.AgentChanRPC != nil {
 				gate.AgentChanRPC.Go("NewAgent", a)
 			}
+
+			if gate.OnAgentInit != nil {
+				gate.OnAgentInit(a)
+			}
 			return a
 		}
 	}
@@ -61,6 +68,10 @@ func (gate *Gate) Run(closeSig chan bool) {
 			a := &agent{conn: conn, gate: gate}
 			if gate.AgentChanRPC != nil {
 				gate.AgentChanRPC.Go("NewAgent", a)
+			}
+
+			if a.gate.OnAgentInit != nil {
+				a.gate.OnAgentInit(a)
 			}
 			return a
 		}
@@ -110,6 +121,7 @@ func (a *agent) Run() {
 			}
 		}
 	}
+
 }
 
 func (a *agent) OnClose() {
@@ -118,6 +130,9 @@ func (a *agent) OnClose() {
 		if err != nil {
 			log.Errorf("chanrpc error: %v", err)
 		}
+	}
+	if a.gate.OnAgentDestroy != nil {
+		a.gate.OnAgentDestroy(a)
 	}
 }
 
@@ -132,6 +147,13 @@ func (a *agent) WriteMsg(msg interface{}) {
 		if err != nil {
 			log.Errorf("write message %v error: %v", reflect.TypeOf(msg), err)
 		}
+	}
+}
+
+func (a *agent) WriteData(data []byte) {
+	err := a.conn.WriteMsg(data)
+	if err != nil {
+		log.Errorf("write data error: %v" , err)
 	}
 }
 

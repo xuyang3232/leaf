@@ -24,6 +24,7 @@ type MsgInfo struct {
 	msgRouter     *chanrpc.Server
 	msgHandler    MsgHandler
 	msgRawHandler MsgHandler
+	msgRawMergedHandler MsgHandler
 }
 
 type MsgHandler func([]interface{})
@@ -101,6 +102,15 @@ func (p *Processor) SetRawHandler(id uint16, msgRawHandler MsgHandler) {
 	p.msgInfo[id].msgRawHandler = msgRawHandler
 }
 
+// It's dangerous to call the method on routing or marshaling (unmarshaling)
+func (p *Processor) SetRawMergedHandler(id uint16, msgRawMergedHandler MsgHandler) {
+	if _, ok := p.msgInfo[id]; !ok{
+		log.Fatalf("message id %v not registered", id)
+	}
+
+	p.msgInfo[id].msgRawMergedHandler = msgRawMergedHandler
+}
+
 // goroutine safe
 func (p *Processor) Route(msg interface{}, userData interface{}) error {
 	// raw
@@ -112,6 +122,9 @@ func (p *Processor) Route(msg interface{}, userData interface{}) error {
 		i := p.msgInfo[msgRaw.msgID]
 		if i.msgRawHandler != nil {
 			i.msgRawHandler([]interface{}{msgRaw.msgID, msgRaw.msgRawData, userData})
+		}
+        if i.msgRawMergedHandler != nil {
+			i.msgRawMergedHandler([]interface{}{msgRaw.msgID, msgRaw.msgRawData, userData})
 		}
 		return nil
 	}
@@ -128,6 +141,9 @@ func (p *Processor) Route(msg interface{}, userData interface{}) error {
 	i := p.msgInfo[id]
 	if i.msgHandler != nil {
 		i.msgHandler([]interface{}{msg, userData})
+	}
+	if i.msgRawHandler != nil {
+		i.msgRawHandler([]interface{}{msg, userData})
 	}
 	if i.msgRouter != nil {
 		i.msgRouter.Go(msgType, msg, userData)
@@ -156,7 +172,9 @@ func (p *Processor) Unmarshal(data []byte) (interface{}, error) {
 	i := p.msgInfo[id]
 	if i.msgRawHandler != nil {
 		return MsgRaw{id, data[2:]}, nil
-	} else {
+	} else if i.msgRawMergedHandler != nil {
+		return MsgRaw{id, data[0:]}, nil
+	}else {
 		msg := reflect.New(i.msgType.Elem()).Interface()
 		return msg, proto.UnmarshalMerge(data[2:], msg.(proto.Message))
 	}
@@ -183,6 +201,30 @@ func (p *Processor) Marshal(msg interface{}) ([][]byte, error) {
 	// data
 	data, err := proto.Marshal(msg.(proto.Message))
 	return [][]byte{id, data}, err
+}
+
+// goroutine safe, return msg len and data as single data
+func (p *Processor) MarshalWithMsgId(msg interface{}) ([]byte, error) {
+	args, err := p.Marshal(msg)
+	// get len
+	var msgLen uint32
+	for i := 0; i < len(args); i++ {
+		msgLen += uint32(len(args[i]))
+	}
+
+	// don't copy
+	if len(args) == 1 {
+		return args[0], nil
+	}
+
+	// merge the args
+	msgMerge := make([]byte, msgLen)
+	l := 0
+	for i := 0; i < len(args); i++ {
+		copy(msgMerge[l:], args[i])
+		l += len(args[i])
+	}
+	return msgMerge,err
 }
 
 // goroutine safe
